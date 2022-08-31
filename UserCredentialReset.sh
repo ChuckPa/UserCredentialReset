@@ -2,7 +2,8 @@
 #
 # Plex credential reset and claim for Plex Media Server
 #
-# Author: ChuckPa
+# Author:  ChuckPa
+# Version: 1.0.0.0
 #
 # Set Prefs
 SetPref()

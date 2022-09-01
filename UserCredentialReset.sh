@@ -129,51 +129,68 @@ HostConfig() {
 
 ############################################### Begin here ####################################################
 
+# Initialize
+CustomPreferences=""
+ClaimToken=""
+Preferences=""
+
 # Check username
 if [ "$(id -u $(whoami))" -ne 0 ]; then
   echo "ERROR:  This tool can only be run as the root/admin (or sudo root/admin) user"
   exit 1
 fi
 
-# Handle special case:  Container environment where path outside stopped container is not identifiable by automation.
-if [ "$1" = "-p" ]; then
+# Use any given command line options
+while [ "$1" != "" ]
+do
 
-  # If #2 is not a valid file,  ignore (shift off) the -p and hope for the best
+  # Manual path to Preferences.xml given
+  if [ "$1" = "-p" ]; then
 
-  # -p (preferences path) option
-  if [ -f "$2" ]; then
+    # -p (preferences path) option
+    if [ -f "$2" ]; then
 
-    if grep ProcessedMachineIdentifier "$2" >/dev/null 2>/dev/null; then
+      if grep ProcessedMachineIdentifier "$2" >/dev/null 2>/dev/null; then
 
-      # Use this path.  It appears to be a Preferences.xml file
-      Preferences="$2"
-      shift
-      shift
+        # Use this path.  It appears to be a Preferences.xml file
+        CustomPreferences="$2"
+        shift
+        shift
+      else
+        echo "File '$2' does not appear to be a minimally valid Plex Preferences.xml file.  Cannot use.  Exiting."
+        exit 1
+      fi
     else
-      echo "File '$2' does not appear to be a minimally valid Plex Preferences.xml file.  Cannot use.  Exiting."
+      echo "ERROR:  Cannot access given Preferences file '$2'."
+      echo "Exiting."
       exit 1
     fi
+
+    HostType="User-Defined"
+
+  # User supplied claim token on command line ?
+  elif [ "$(echo $1 | grep 'claim-')" != "" ]; then
+
+    ClaimToken="$1"
+    shift
+
+  # Unrecognizd item on command line
   else
-    echo "ERROR:  '$2' is not an accessible file"
-    echo "Exiting."
+    echo "Error:  Unrecognized command line item '$1'- ignored."
+    shift
+  fi
+done
+
+# Get our config if not manual
+if [ "$CustomPreferences" = "" ]; then
+
+  if ! HostConfig; then
+    echo " "
+    echo "Unrecognized host type.  Cannot continue."
     exit 1
   fi
-
-  HostType="User Specified"
-
-# Get our config
-elif ! HostConfig; then
-  echo " "
-  echo "Unrecognized host type.  Cannot continue."
-  exit 1
-fi
-
-# Make sure curl exists
-if ! command -v curl > /dev/null; then
-  echo " "
-  echo "This utility requires the 'curl' command which is not found."
-  echo "Please install 'curl' or add it to 'path' if already installed."
-  exit 1
+else
+  Preferences="$CustomPreferences"
 fi
 
 echo " "
@@ -183,10 +200,22 @@ echo "This utility will reset the server's credentials."
 echo "It will next reclaim the server for you using a Plex Claim token you provide from https://plex.tv/claim"
 echo " "
 
+# Make sure curl exists
+if ! command -v curl > /dev/null; then
+  echo " "
+  echo "This utility requires the 'curl' command which is not found."
+  echo "Please install 'curl' or add it to 'path' if already installed."
+  exit 1
+fi
 
 if [ ! -f "$Preferences" ]; then
   echo "ERROR:  Cannot find Preferences file at '$Preferences'. Exiting"
   exit 1
+fi
+
+# Annotate custom preferences usage
+if [ "$CustomPreferences" != "" ]; then
+  echo "Using given Preferences path:  '$CustomPreferences'"
 fi
 
 # Make certain PMS is stopped
@@ -199,20 +228,22 @@ fi
 Owner="$(stat -c '%u:%g' "$Preferences")"
 Permissions="$(stat -c '%a' "$Preferences")"
 
-# Get Claim Token from user
-ClaimToken=""
-
-# Accept command line argument
-if [ "$1" != "" ]; then
-
-  # Assume argument is claim-xxxxxx
-  ClaimToken="$1"
-  echo "Using claim token:  '$ClaimToken'"
+# Ask for claim token
+if [ "$ClaimToken" != "" ]; then
+  echo "Using given claim token:  '$ClaimToken'"
+  echo " "
 else
   while [ "$ClaimToken" = "" ]
   do
     echo -n "Please enter Plex Claim Token copied from http://plex.tv/claim : "
     read ClaimToken
+
+    if [ "$(echo $ClaimToken | grep '^claim-' )" = "" ]; then
+
+      # Not recognized claim token
+      echo "Token not recognized.  Token should be 'claim-xxxxxx' form"
+      ClaimToken=""
+    fi
   done
 fi
 
@@ -232,10 +263,8 @@ sed -i 's/ PlexOnlineHome="[^"]*"//'     "$Preferences"
 sed -i 's/ secureConnections="[012]"//'  "$Preferences"
 sed -i 's/ AcceptedEULA="[01]"//'        "$Preferences"
 
-echo "Preferences.xml cleared"
-echo "Getting new credentials from Plex.tv"
-
 # Get Credentials
+echo "Getting new credentials from Plex.tv"
 LoginInfo="$(curl -X POST -s \
                   -H "X-Plex-Client-Identifier: ${ClientId}" \
                   -H "X-Plex-Product: Plex Media Server"\
@@ -293,4 +322,4 @@ echo " "
 chown $Owner "$Preferences"
 chmod $Permissions "$Preferences"
 
-echo "Done.  You may now start PMS."
+echo "Complete.  You may now start PMS."

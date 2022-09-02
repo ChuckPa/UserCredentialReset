@@ -219,7 +219,7 @@ if [ "$CustomPreferences" != "" ]; then
 fi
 
 # Make certain PMS is stopped
-if [ $(ps -ef | grep  ' Plex Media Server ' | grep -v grep | wc -l) -gt 0 ]; then
+if [ $(ps -ef | grep  'Plex Media Server' | grep -v Preferences | grep -v grep | wc -l) -gt 0 ]; then
   echo "ERROR:  PMS is running.  Please stop PMS and try again"
   exit 1
 fi

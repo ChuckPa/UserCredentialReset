@@ -25,7 +25,7 @@ It runs on the Linux command line with 'root' privilege level so it may edit Ple
 
 1. A Plex Media Server account at https://app.plex.tv
 2. A valid server Prefernces.xml containing the MachineID and ProcessedMachineID fields.
-3. 'curl'  (C-utl) utility for your host.
+3. 'curl'  (C-url) utility for your host.
 4. 'tar' or 'zip' to extract the utility script from the pretective wrapper.
 5. Plex Media Server stopped.
 
@@ -103,7 +103,7 @@ Manual Path specification (which includes containers and custom) (See below)
   If your PMS configuration is not using one of the above predefined configurations,
   You may specify the path to the Preferences.xml file using the `-p` option.
 
-  Using `-p "/path/to/Preferences.xml` bypasses host type checking.
+  Using `-p "/path/to/Preferences.xml"` bypasses host type checking.
 
   However, it does confirm PMS is stopped and sufficient "root/admin" privilege is active.
 

@@ -38,12 +38,29 @@ Netgear (ReadyNAS) | "your_choice"       |  "/data/your_choice"
 Synology (DSM 6)   | Plex                |  /volume1/Plex             (change volume as required)
 Synology (DSM 7)   | PlexMediaServer     |  /volume1/PlexMediaServer  (change volume as required)
 QNAP (QTS/QuTS)    | Public              |  /share/Public
+Western Digital    | Public              |  /mnt/HD/HD_a2/Public      (Does not support 'MyCloudHome' series)
 Docker             | N/A                 |  N/A
 Linux (wkstn/svr)  | N/A                 |  N/A
 ```
 
 (recommend using Public shared folder)
 Manual Path specification (which includes containers and custom) (See below)
+
+# Download and extraction
+
+1.  If you have a Linux or MacOS computer,  the shell script `UserCredentialReset.sh` can be downloaded directly.
+2.  If you have a Windows computer,  you must be very careful not to damage the `.sh` file because Windows 'newline' character is different than Linux.
+3.  If you want the `tar.gz` (compressed tar) or `zip` file,  download appropriately.
+4.  Extraction is either:
+        `tar xf UserCredentialReset.tar.gz`
+    -or-
+        `unzip UserCredentialReset.zip`
+
+5.  In both cases,  you'll end up with subdirectory `UserCredentialReset-main`.
+6.  You will find `UserCredentialReset.sh` there.
+
+
+
 
 
 # How to use this tool.
@@ -60,7 +77,7 @@ Manual Path specification (which includes containers and custom) (See below)
 5.  Extract the utility from the tar file
 ```
     cd DIRECTORY_FROM_ABOVE
-    tar xf ./UserCredentialReset.tar
+    tar xf ./UserCredentialReset.tar.gz
     ls UserCredentialReset.*
 ```
     You will see file `UserCredentialReset.sh`

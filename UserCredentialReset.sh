@@ -322,4 +322,9 @@ echo " "
 chown $Owner "$Preferences"
 chmod $Permissions "$Preferences"
 
+# Remove existing certificate and let PMS pull fresh
+# (harmless if cert unchanged but required if password change)
+CertDir="$(dirname "$Preferences")/Cache"
+rm -f "$CertDir"/*.p12
+
 echo "Complete.  You may now start PMS."

@@ -3,7 +3,7 @@
 # Plex credential reset and claim for Plex Media Server
 #
 # Author:  ChuckPa
-# Version: 1.0.0.0
+# Version: 1.0.4.0
 #
 # Set Prefs
 SetPref()
@@ -321,5 +321,10 @@ echo " "
 # Set the ownership (back) to what it was and guarantee read/write
 chown $Owner "$Preferences"
 chmod $Permissions "$Preferences"
+
+# Remove existing certificate and let PMS pull fresh
+# (harmless if cert unchanged but required if password change)
+CertDir="$(dirname "$Preferences")/Cache"
+rm -f "$CertDir"/*.p12
 
 echo "Complete.  You may now start PMS."

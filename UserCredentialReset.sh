@@ -117,7 +117,7 @@ HostConfig() {
   # Western Digital
   elif [ -f /etc/system.conf ] &&  grep "Western Digital Corp" /etc/system.conf >/dev/null; then
 
-      AppSuppDir=/mnt/HD/HD*/Nas_Prog/plex_conf
+      AppSuppDir="(echo /mnt/HD/HD*/Nas_Prog/plex_conf)"
       Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
       HostType="Western Digital"
       return 0

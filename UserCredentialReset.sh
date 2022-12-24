@@ -114,13 +114,20 @@ HostConfig() {
       return 0
     fi
 
-  # Western Digital
+  # Western Digital  (watch for semi-broken configurations with multiple drives)
   elif [ -f /etc/system.conf ] &&  grep "Western Digital Corp" /etc/system.conf >/dev/null; then
 
       AppSuppDir="$(echo /mnt/HD/HD*/Nas_Prog/plex_conf)"
-      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
-      HostType="Western Digital"
-      return 0
+      for i in $AppSuppDir
+      do
+        if [ -f "$i/Plex Media Server/Preferences.xml" ];then
+          AppSuppDir="$i"
+          Preferences="$i/Plex Media Server/Preferences.xml"
+          HostType="Western Digital"
+          return 0
+        fi
+      done
+      echo "ERROR: Host is Western Digital but Preferences.xml not found."
   fi
 
   # Unknown / currently unsupported host

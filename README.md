@@ -1,6 +1,15 @@
+## User Credentia Reset
+
+[![GitHub issues](https://img.shields.io/github/issues/ChuckPa/UserCredentialReset.svg?style=flat)](https://github.com/ChuckPa/UserCredentialReset/issues)
+[![Release](https://img.shields.io/github/release/ChuckPa/UserCredentialReset.svg?style=flat)](https://github.com/ChuckPa/UserCredentialReset/releases/latest)
+[![Download latest release](https://img.shields.io/github/downloads/ChuckPa/UserCredentialReset/latest/total.svg)](https://github.com/ChuckPa/UserCredentialReset/releases/latest)
+[![Download total](https://img.shields.io/github/downloads/ChuckPa/UserCredentialReset/total.svg)](https://github.com/ChuckPa/PlexDBRepair/releases)
+[![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]('')
+![Maintenance](https://img.shields.io/badge/Maintained-Yes-green.svg)
+
 
 User Credential Reset and Server Reclaim Utility
-            - for Plex Media Server
+                - for Plex Media Server
 
 
 # Introduction

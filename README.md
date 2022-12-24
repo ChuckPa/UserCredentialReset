@@ -1,4 +1,4 @@
-## User Credentia Reset
+## User Credential Reset
 
 [![GitHub issues](https://img.shields.io/github/issues/ChuckPa/UserCredentialReset.svg?style=flat)](https://github.com/ChuckPa/UserCredentialReset/issues)
 [![Release](https://img.shields.io/github/release/ChuckPa/UserCredentialReset.svg?style=flat)](https://github.com/ChuckPa/UserCredentialReset/releases/latest)

@@ -31,6 +31,7 @@ It runs on the Linux command line with 'root' privilege level so it may edit Ple
 5. Netgear ReadyNAS
 6. Western Digital (OS5 models – PR,DL, and Ultra)
 7. Non-standard Linux installations, including Docker, when path to Preferences.xml is known.
+8. Linux Snap  *restrictions apply
 
 # Prerequisites
 
@@ -52,10 +53,19 @@ QNAP (QTS/QuTS)    | Public              |  /share/Public
 Western Digital    | Public              |  /mnt/HD/HD_a2/Public      (Does not support 'MyCloudHome' series)
 Docker             | N/A                 |  N/A
 Linux (wkstn/svr)  | N/A                 |  N/A
+Linux (SNAP)       | N/A                 |  N/A
 ```
 
 (recommend using Public shared folder)
 Manual Path specification (which includes containers and custom) (See below)
+
+# Restrictions
+
+SNAP packages, due to their non-integration with the package managers (RPM & DPKG), can find themselves installed
+on a system where another PMS instance already exists.
+
+In consideration of this,  presence of a SNAP package is only tested *after* the mainstream package has been confirmed not to exist.
+If both DPKG/RPM package and a snap package are installed concurrently,  the DPKG/RPM instance will be given priority in all cases.
 
 # Download and extraction
 

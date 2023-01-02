@@ -128,6 +128,15 @@ HostConfig() {
         fi
       done
       echo "ERROR: Host is Western Digital but Preferences.xml not found."
+
+  # when all else fails,  look for SNAP (low usage)
+  elif [ -f "/snap/plexmediaserver/current/Plex Media Server" ] && \
+       [ -f "/var/snap/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml" ]; then
+
+      AppSuppDir="/var/snap/plexmediaserver/Library/Application Support"
+      Preferences="/var/snap/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml"
+      HostType="Snap (Linux)"
+      return 0
   fi
 
   # Unknown / currently unsupported host

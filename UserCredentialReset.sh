@@ -129,7 +129,7 @@ HostConfig() {
       done
       echo "ERROR: Host is Western Digital but Preferences.xml not found."
 
-  # when all else fails,  look for SNAP (low usage)
+  # look for SNAP (low usage)
   elif [ -f "/snap/plexmediaserver/current/Plex Media Server" ] && \
        [ -f "/var/snap/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml" ]; then
 
@@ -137,6 +137,37 @@ HostConfig() {
       Preferences="/var/snap/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml"
       HostType="Snap (Linux)"
       return 0
+
+  # Containers:
+  # -  Docker cgroup v1 & v2
+  # -  Podman (libpod)
+  elif [ "$(grep docker /proc/1/cgroup | wc -l)" -gt 0 ] || [ "$(grep 0::/ /proc/1/cgroup)" = "0::/" ] ||
+       [ "$(grep libpod /proc/1/cgroup | wc -l)" -gt 0 ]; then
+
+    # HOTIO Plex image structure is non-standard (contains symlink which breaks detection)
+    if  [ -d "/app/usr/lib/plexmediaserver" ] && [ -d "/config/Plug-in Support" ]; then
+
+      AppSuppDir="/config"
+      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+      HostType="HOTIO"
+      return 0
+
+    # Docker (All main image variants except binhex and hotio)
+    elif [ -d "/config/Library/Application Support" ]; then
+
+      AppSuppDir="/config/Library/Application Support"
+      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+      HostType="Docker"
+      return 0
+
+    # BINHEX Plex image
+    elif [ -d "/config/Plex Media Server" ]; then
+
+      AppSuppDir="/config"
+      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+      HostType="BINHEX"
+      return 0
+    fi
   fi
 
   # Unknown / currently unsupported host

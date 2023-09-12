@@ -5,10 +5,9 @@
 [![GitHub issues](https://img.shields.io/github/issues/ChuckPa/UserCredentialReset.svg?style=flat)](https://github.com/ChuckPa/UserCredentialReset/issues)
 [![Release](https://img.shields.io/github/release/ChuckPa/UserCredentialReset.svg?style=flat)](https://github.com/ChuckPa/UserCredentialReset/releases/latest)
 [![Download latest release](https://img.shields.io/github/downloads/ChuckPa/UserCredentialReset/latest/total.svg)](https://github.com/ChuckPa/UserCredentialReset/releases/latest)
-[![Download total](https://img.shields.io/github/downloads/ChuckPa/UserCredentialReset/total.svg)](https://github.com/ChuckPa/PlexDBRepair/releases)
+[![Download total](https://img.shields.io/github/downloads/ChuckPa/UserCredentialReset/total.svg)](https://github.com/ChuckPa/UserCredentialReset/releases)
 [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]('')
 ![Maintenance](https://img.shields.io/badge/Maintained-Yes-green.svg)
-
 
 User Credential Reset and Server Reclaim Utility
                 - for Plex Media Server
@@ -36,9 +35,9 @@ It runs on the Linux command line with 'root' privilege level so it may edit Ple
 # Prerequisites
 
 1. A Plex Media Server account at https://app.plex.tv
-2. A valid server Prefernces.xml containing the MachineID and ProcessedMachineID fields.
+2. A valid server Preferences.xml containing the MachineID and ProcessedMachineID fields.
 3. 'curl'  (C-url) utility for your host.
-4. 'tar' or 'zip' to extract the utility script from the pretective wrapper.
+4. 'tar' or 'zip' to extract the utility script from the protective wrapper.
 5. Plex Media Server stopped.
 
 # Where to place the utility's tar file (Recommendations)

@@ -3,7 +3,7 @@
 # Plex credential reset and claim for Plex Media Server
 #
 # Author:  ChuckPa
-# Version: 1.0.4.0
+# Version: 1.0.9.0
 #
 # Set Prefs
 SetPref()
@@ -43,6 +43,8 @@ HostConfig() {
     AppSuppDir="/var/packages/PlexMediaServer/shares/PlexMediaServer/AppData"
     Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
     HostType="Synology (DSM 7)"
+    StartCommand="/usr/syno/bin/synopkg start plexmediaserver"
+    StopCommand="/usr/syno/bin/synopkg stop plexmediaserver"
     return 0
 
   # Synology (DSM 6)
@@ -56,6 +58,8 @@ HostConfig() {
     AppSuppDir="$PlexShare/Library/Application Support"
     Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
     HostType="Synology (DSM 6)"
+    StopCommand="synopkg stop 'PlexMediaServer'"
+    StartCommand="synopkg start 'PlexMediaServer'"
     return 0
 
   # QNAP (QTS & QuTS)
@@ -68,6 +72,8 @@ HostConfig() {
     AppSuppDir="$PKGDIR/Library"
     Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
     HostType="QNAP"
+    StartCommand="/etc/init.d/plex.sh start"
+    StopCommand="/etc/init.d/plex.sh stop"
     return 0
 
   # Standard configuration Linux host
@@ -97,6 +103,8 @@ HostConfig() {
 
     Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
     HostType="$(grep ^PRETTY_NAME= /etc/os-release | sed -e 's/PRETTY_NAME=//' | sed -e 's/"//g')"
+    StartCommand="systemctl start plexmediaserver"
+    StopCommand="systemctl stop plexmediaserver"
     return 0
 
   # Netgear ReadyNAS
@@ -111,6 +119,8 @@ HostConfig() {
       AppSuppDir="$PKGDIR/MediaLibrary"
       Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
       HostType="Netgear ReadyNAS"
+      StartCommand="systemctl start fvapp-plexmediaserver"
+      StopCommand="systemctl stop fvapp-plexmediaserver"
       return 0
     fi
 
@@ -129,14 +139,50 @@ HostConfig() {
       done
       echo "ERROR: Host is Western Digital but Preferences.xml not found."
 
-  # when all else fails,  look for SNAP (low usage)
+  # look for SNAP (low usage)
   elif [ -f "/snap/plexmediaserver/current/Plex Media Server" ] && \
        [ -f "/var/snap/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml" ]; then
 
       AppSuppDir="/var/snap/plexmediaserver/Library/Application Support"
       Preferences="/var/snap/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml"
       HostType="Snap (Linux)"
+      StartCommand="snap start plexmediaserver"
+      StopCommand="snap stop plexmediaserver"
       return 0
+
+  # Containers:
+  # -  Docker cgroup v1 & v2
+  # -  Podman (libpod)
+  elif [ "$(grep docker /proc/1/cgroup | wc -l)" -gt 0 ] || [ "$(grep 0::/ /proc/1/cgroup)" = "0::/" ] ||
+       [ "$(grep libpod /proc/1/cgroup | wc -l)" -gt 0 ]; then
+
+    # HOTIO Plex image structure is non-standard (contains symlink which breaks detection)
+    if  [ -d "/app/usr/lib/plexmediaserver" ] && [ -d "/config/Plug-in Support" ]; then
+
+      AppSuppDir="/config"
+      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+      HostType="HOTIO"
+      return 0
+
+    # Docker (All main image variants except binhex and hotio)
+    elif [ -d "/config/Library/Application Support" ]; then
+
+      AppSuppDir="/config/Library/Application Support"
+      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+      HostType="Docker"
+      StopCommand="/plex_service.sh -d"
+      StartCommand="/plex_service.sh -u"
+
+      return 0
+
+    # BINHEX Plex image
+    elif [ -d "/config/Plex Media Server" ]; then
+
+      AppSuppDir="/config"
+      Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+      HostType="BINHEX"
+      return 0
+    fi
   fi
 
   # Unknown / currently unsupported host
@@ -146,9 +192,15 @@ HostConfig() {
 ############################################### Begin here ####################################################
 
 # Initialize
+Manual=0
 CustomPreferences=""
 ClaimToken=""
 Preferences=""
+StopCommand=""
+StartCommand=""
+PRINTF="echo -n"
+[ -e "/usr/bin/printf" ] && PRINTF="printf %s"
+
 
 # Check username
 if [ "$(id -u $(whoami))" -ne 0 ]; then
@@ -183,6 +235,7 @@ do
     fi
 
     HostType="User-Defined"
+    Manual=1
 
   # User supplied claim token on command line ?
   elif [ "$(echo $1 | grep 'claim-')" != "" ]; then
@@ -234,10 +287,12 @@ if [ "$CustomPreferences" != "" ]; then
   echo "Using given Preferences path:  '$CustomPreferences'"
 fi
 
-# Make certain PMS is stopped
-if [ $(ps -ef | grep  'Plex Media Server' | grep -v Preferences | grep -v grep | wc -l) -gt 0 ]; then
-  echo "ERROR:  PMS is running.  Please stop PMS and try again"
-  exit 1
+# Make certain PMS is stoppable or stopped
+if [ "$StopCommand" = "" ] || [ $Manual -eq 1 ]; then \
+  if [ $(ps -ef | grep  'Plex Media Server' | grep -v Preferences | grep -v grep | wc -l) -gt 0 ]; then
+    echo "ERROR:  PMS is running.  Please stop PMS and try again"
+    exit 1
+  fi
 fi
 
 # Get owner UID:GID of Preferences.xml  (sed mucks with it on some machines)
@@ -251,7 +306,7 @@ if [ "$ClaimToken" != "" ]; then
 else
   while [ "$ClaimToken" = "" ]
   do
-    echo -n "Please enter Plex Claim Token copied from http://plex.tv/claim : "
+    $PRINTF  "Please enter Plex Claim Token copied from http://plex.tv/claim : "
     read ClaimToken
 
     if [ "$(echo $ClaimToken | grep '^claim-' )" = "" ]; then
@@ -269,6 +324,26 @@ ClientId="$(cat "$Preferences"                          | \
             sed -e 's/.*ProcessedMachineIdentifier="//' | \
             sed -e 's/".*//'                            )"
 
+# Stop Plex
+if [ "$StopCommand" != "" ]; then
+  echo "Stopping PMS"
+  $StopCommand
+  Result=$?
+  if [ $Result -ne 0 ]; then
+    echo "Unable to stop Plex.  Error code $Result."
+    echo "Aborting."
+    exit 1
+  fi
+fi
+
+# Give 3 seconds to stop
+sleep 3
+
+# Make certain PMS is stopped
+if [ $(ps -ef | grep  'Plex Media Server' | grep -v Preferences | grep -v grep | wc -l) -gt 0 ]; then
+  echo "ERROR:  PMS is still running.  Please stop PMS and try again"
+  exit 1
+fi
 
 # Clear Preferences.xml
 echo "Clearing Preferences.xml"
@@ -343,4 +418,10 @@ chmod $Permissions "$Preferences"
 CertDir="$(dirname "$Preferences")/Cache"
 rm -f "$CertDir"/*.p12
 
-echo "Complete.  You may now start PMS."
+if [ "$StartCommand" != "" ]; then
+  echo "Starting PMS"
+  $StartCommand
+  echo "Complete."
+else
+  echo "Complete.  You may restart PMS."
+fi

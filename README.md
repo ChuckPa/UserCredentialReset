@@ -85,16 +85,16 @@ If both DPKG/RPM package and a snap package are installed concurrently,  the DPK
 
 # How to use this tool.
 
-1.   Stop Plex
+### Installing the script
 
-2.  Place the tar file (upload) on the host.  (See recommended locations above)
+1.  Place the tar file, or just the script, (upload) on the host.  (See recommended locations above)
 
-3.  Open a terminal window or SSH session to the host and sign in.
+2.  Open a terminal window or SSH session to the host and sign in.
     (Windows users can use Putty utility)
 
-4.  Elevate command line privileges to 'root'  (`sudo sh`)
+3.  Elevate command line privileges to 'root'  (`sudo sh`)
 
-5.  Extract the utility from the tar file
+4.  Extract the utility from the tar file (if appropriate)
 ```
     cd DIRECTORY_FROM_ABOVE
     tar xf ./UserCredentialReset.tar.gz
@@ -102,34 +102,37 @@ If both DPKG/RPM package and a snap package are installed concurrently,  the DPK
 ```
     You will see file `UserCredentialReset.sh`
 
-6.  Make it executable
+5.  Make it executable
 ```
     chmod +x UserCredentialReset.sh
 ```
-7.  Invoke the utility  `./UserCredentialReset.sh`
 
-8.  It will confirm the host platform type (so it knows what to do)
+### This script can detect most configurations and therefore stop/start PMS automatically as part of the claiming process.  If it can stop & start plex for you, it will do so.  If it can't then it will make certain PMS is stopped before proceeding.
 
-9.  It will confirm you have sufficient user privilege and PMS is stopped
 
-10.  It will then prompt for a "Plex Claim Token".
+6.  Invoke the utility  `./UserCredentialReset.sh`
+    -- Confirms the host platform type (so it knows what to do)
+    -- Confirm you have sufficient user privilege and PMS is stopped
+    -- Prompts for a "Plex Claim Token" (unless provided on the invocation command line)
 
-11.  Open a browser tab to:    https://plex.tv/claim
+7.  Open a browser tab to:    https://plex.tv/claim
 
-12.  COPY the given token
+8.  COPY the given token
 
-13.  WITHIN the next 4 Minutes,     PASTE the token on the utility's command line
+9.  WITHIN the next 4 Minutes,     PASTE the token on the utility's command line
     (The token expires so we need be quick)
 
-14.  Hit Enter and it will immediately complete the task. (5-20'ish seconds)
+10.  Hit Enter and it will immediately complete the task. (5-20'ish seconds)
+     --   Stops PMS (if supported for your configuration)
+     --   Obtains new credentials for your server
+     --   Writes new credentials in Preferences.xml
+     --   Starts PMS (if supported for your configuration)
 
-15.  When complete,  It will verify all your credentials are valid and then update Preferences.xml for you
+11.  It will print out your Plex username and email (confirmation which account PMS is claimed).
 
-16.  It will print out your Plex username and email used in case you have multiple accounts.
+12.  Utility exits.
 
-17.  Utility exits.
-
-18.  Start PMS.  It will be back to normal.
+13.  Start PMS (if needed). It will be back to normal.
 
 
 **PLEASE** don't hesitate to ask if questions or issues.
@@ -158,17 +161,21 @@ If both DPKG/RPM package and a snap package are installed concurrently,  the DPK
 
           Plex Media Server user credential reset and reclaim tool (QNAP)
 
+
 This utility will reset the server's credentials.
 It will next reclaim the server for you using a Plex Claim token you provide from https://plex.tv/claim
 
-Please enter Plex Claim Token copied from http://plex.tv/claim : claim-YkP28ueyXEUJYxjFZUzT
+Using given claim token:  'claim-TE89fVWHtVjqXBPgG8z5'
+
+Stopping PMS
 Clearing Preferences.xml
 Getting new credentials from Plex.tv
 Claim completed without errors.
  Username: ChuckPA
  Email:    ChuckIsCrazy@loonies.com
 
-Complete.  You may now start PMS.
+Starting PMS
+Complete.
 [~] #
 ```
 

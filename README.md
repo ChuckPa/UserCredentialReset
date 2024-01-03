@@ -31,6 +31,7 @@ It runs on the Linux command line with 'root' privilege level so it may edit Ple
 6. Western Digital (OS5 models – PR,DL, and Ultra)
 7. Non-standard Linux installations, including Docker, when path to Preferences.xml is known.
 8. Linux Snap  *restrictions apply
+9. Plex,inc and LinuxServerio docker images  (HOTIO and BinHex partially supported)
 
 # Prerequisites
 

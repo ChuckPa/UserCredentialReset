@@ -158,7 +158,7 @@ If both DPKG/RPM package and a snap package are installed concurrently,  the DPK
 
 ```
 [~] # chmod +x UserCredentialReset.sh
-[~] # ./UserCredentialReset.sh
+[~] # ./UserCredentialReset.sh claim-TE89fVWHtVjqXBPgG8z5
 
           Plex Media Server user credential reset and reclaim tool (QNAP)
 

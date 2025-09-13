@@ -1,0 +1,13 @@
+# UserCredentialReset
+
+# Release Info:
+v1.11.0
+
+  1.  Fix bug       -  Remove errant "whoami: no such command" on some hosts
+  2.  Enhance       -  Add support for BINHEX, HOTIO, and other popular Docker images
+                       to maintain parity with DBRepair
+  3.  Update        -  Updated version numbering to 3 digit fields.  Major.Minor.bugfix
+
+v1.10.0
+  Skipped due to github tagging issue
+

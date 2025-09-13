@@ -3,7 +3,10 @@
 # Plex credential reset and claim for Plex Media Server
 #
 # Author:  ChuckPa
-# Version: 1.0.9.0
+# Version: v1.11.0
+#
+#
+Version="v1.11.0"
 #
 # Set Prefs
 SetPref()
@@ -17,14 +20,6 @@ SetPref()
 # Determine which host we are running on and set variables
 HostConfig() {
 
-#### NOT YET
-#  # Docker
-#  if [ -d "/config/Library/Application Support/Plex Media Server" ]; then
-#    AppSuppDir="/config/Library/Application Support"
-#    Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
-#    HostType="Docker Container"
-#    return 0
-######
   # ASUSTOR
   if [ -f /etc/nas.conf ] && grep ASUSTOR /etc/nas.conf >/dev/null && \
      [ -d "/volume1/Plex/Library/Plex Media Server" ];  then
@@ -157,32 +152,67 @@ HostConfig() {
        [ "$(grep libpod /proc/1/cgroup | wc -l)" -gt 0 ]; then
 
     # HOTIO Plex image structure is non-standard (contains symlink which breaks detection)
-    if  [ -d "/app/usr/lib/plexmediaserver" ] && [ -d "/config/Plug-in Support" ]; then
-
+    if [ -n "$(grep -irslm 1 hotio /etc/s6-overlay/s6-rc.d)" ]; then
+      PLEX_SQLITE=$(find /app/bin/usr/lib/plexmediaserver /app/usr/lib/plexmediaserver /usr/lib/plexmediaserver -maxdepth 0 -type d -print -quit 2>/dev/null); PLEX_SQLITE="$PLEX_SQLITE/Plex SQLite"
       AppSuppDir="/config"
       Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+
+      if [ -d "/run/service/plex" ] || [ -d "/run/service/service-plex" ]; then
+        SERVICE_PATH=$([ -d "/run/service/plex" ] && echo "/run/service/plex" || [ -d "/run/service/service-plex" ] && echo "/run/service/service-plex")
+        HaveStartStop=1
+        StartCommand="s6-svc -u $SERVICE_PATH"
+        StopCommand="s6-svc -d $SERVICE_PATH"
+      fi
+
       HostType="HOTIO"
       return 0
 
     # Docker (All main image variants except binhex and hotio)
     elif [ -d "/config/Library/Application Support" ]; then
 
+      PLEX_SQLITE="/usr/lib/plexmediaserver/Plex SQLite"
       AppSuppDir="/config/Library/Application Support"
       Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
-      HostType="Docker"
-      StopCommand="/plex_service.sh -d"
-      StartCommand="/plex_service.sh -u"
 
+      # Miscellaneous start/stop methods
+      if [ -d "/var/run/service/svc-plex" ]; then
+        HaveStartStop=1
+        StartCommand="s6-svc -u /var/run/service/svc-plex"
+        StopCommand="s6-svc -d /var/run/service/svc-plex"
+      fi
+
+      if [ -d "/run/service/svc-plex" ]; then
+        HaveStartStop=1
+        StartCommand="s6-svc -u /run/service/svc-plex"
+        StopCommand="s6-svc -d /run/service/svc-plex"
+      fi
+
+      if [ -d "/var/run/s6/services/plex" ]; then
+        HaveStartStop=1
+        StartCommand="s6-svc -u /var/run/s6/services/plex"
+        StopCommand="s6-svc -d /var/run/s6/services/plex"
+      fi
+      HostType="Docker"
       return 0
 
     # BINHEX Plex image
-    elif [ -d "/config/Plex Media Server" ]; then
+    elif [ -e /etc/os-release ] &&  grep "IMAGE_ID=archlinux" /etc/os-release  1>/dev/null  && \
+         [ -e /home/nobody/start.sh ] &&  grep PLEX_MEDIA /home/nobody/start.sh 1> /dev/null ; then
 
+      PLEX_SQLITE="/usr/lib/plexmediaserver/Plex SQLite"
       AppSuppDir="/config"
       Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
+
+      if grep rpcinterface /etc/supervisor.conf > /dev/null; then
+        HaveStartStop=1
+        StartCommand="supervisorctl start plexmediaserver"
+        StopCommand="supervisorctl stop plexmediaserver"
+      fi
+
       HostType="BINHEX"
       return 0
     fi
+
   fi
 
   # Unknown / currently unsupported host
@@ -203,7 +233,7 @@ PRINTF="echo -n"
 
 
 # Check username
-if [ "$(id -u $(whoami))" -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
   echo "ERROR:  This tool can only be run as the root/admin (or sudo root/admin) user"
   exit 1
 fi
@@ -243,7 +273,7 @@ do
     ClaimToken="$1"
     shift
 
-  # Unrecognizd item on command line
+  # Unrecognized item on command line
   else
     echo "Error:  Unrecognized command line item '$1'- ignored."
     shift
@@ -256,6 +286,7 @@ if [ "$CustomPreferences" = "" ]; then
   if ! HostConfig; then
     echo " "
     echo "Unrecognized host type.  Cannot continue."
+    echo "Consider using: '$0 -p /path/to/Preferences.xml' for manual override"
     exit 1
   fi
 else
@@ -263,7 +294,8 @@ else
 fi
 
 echo " "
-echo "          Plex Media Server user credential reset and reclaim tool ($HostType)"
+echo "          User credential reset & reclaim tool for Plex Media Server (Linux)  ($HostType)"
+echo "                                     (Version: $Version)"
 echo " "
 echo "This utility will reset the server's credentials."
 echo "It will next reclaim the server for you using a Plex Claim token you provide from https://plex.tv/claim"
@@ -336,8 +368,8 @@ if [ "$StopCommand" != "" ]; then
   fi
 fi
 
-# Give 3 seconds to stop
-sleep 3
+# Give 5 seconds to stop
+sleep 5
 
 # Make certain PMS is stopped
 if [ $(ps -ef | grep  'Plex Media Server' | grep -v Preferences | grep -v grep | wc -l) -gt 0 ]; then

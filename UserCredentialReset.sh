@@ -38,8 +38,8 @@ HostConfig() {
     AppSuppDir="/var/packages/PlexMediaServer/shares/PlexMediaServer/AppData"
     Preferences="$AppSuppDir/Plex Media Server/Preferences.xml"
     HostType="Synology (DSM 7)"
-    StartCommand="/usr/syno/bin/synopkg start plexmediaserver"
-    StopCommand="/usr/syno/bin/synopkg stop plexmediaserver"
+    StartCommand="/usr/syno/bin/synopkg start PlexMediaServer"
+    StopCommand="/usr/syno/bin/synopkg stop PlexMediaServer"
     return 0
 
   # Synology (DSM 6)
